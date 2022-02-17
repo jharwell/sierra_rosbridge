@@ -19,27 +19,59 @@
 
 # 3rd party packages
 import rospy
+from std_msgs.msg import Empty
 
 # Project packages
 
 
 class SIERRATimekeeper():
     def __init__(self) -> None:
-        self.length = rospy.get_param("sierra/experiment/length")
-        print(self.length)
         rospy.init_node('sierra_timekeeper', anonymous=True)
+        # Relative namespace so this works for robots and for master nodes
+        length = rospy.search_param("sierra/experiment/length")
+        self.name = rospy.get_caller_id()
+        self.barrier_start = rospy.search_param("sierra/experiment/barrier_start")
+
+        if self.barrier_start is not None:
+            # Leading '/' -> This signal must come from the master in the global
+            # namespace
+            rospy.Subscriber('/sierra/experiment/start',
+                             Empty,
+                             self._callback)
+            self.start = False
+        else:
+            self.start = True
+
+        self.length = rospy.get_param(length)
+
+        rospy.loginfo(
+            f"{self.name}: {self.length} seconds, barrier_start={self.barrier_start}")
 
     def __call__(self) -> None:
+        # Wait until we are given the signal to start the experiment so that all
+        # nodes/robots/etc all start at about the same time.
+        if self.barrier_start is not None:
+            while not rospy.is_shutdown() and not self.start:
+                rospy.sleep(1)
+
+        rospy.loginfo(f"{self.name}: Experiment start")
+
         start = rospy.get_rostime().secs
         now = rospy.get_rostime().secs
 
+        rate = rospy.Rate(1)  # 1hz
         while not rospy.is_shutdown():
             if now - start >= self.length:
                 break
             now = rospy.get_rostime().secs
 
-            rate = rospy.Rate(1)  # 1hz
             rate.sleep()
+
+        rospy.loginfo(f"{self.name}: Exit after {self.length} seconds")
+
+    def _callback(self, data) -> None:
+        rospy.loginfo(f"{self.name}: Received experiment start signal")
+        self.start = True
 
 
 if __name__ == '__main__':
