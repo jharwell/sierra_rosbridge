@@ -2,10 +2,12 @@
 sierra_rosbridge
 ================
 
-ROS package for managing simulations and real robots with SIERRA.
+ROS package for managing simulations and real robots with `SIERRA
+<https://github.com/swarm-robotics/sierra.git>`_.
 
 
-To install:
+Installation
+============
 
 #. Install catkin tools::
 
