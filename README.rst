@@ -2,6 +2,9 @@
 sierra_rosbridge
 ================
 
+.. image:: https://zenodo.org/badge/436796209.svg
+   :target: https://zenodo.org/badge/latestdoi/436796209
+
 ROS package for managing simulations and real robots with `SIERRA
 <https://github.com/swarm-robotics/sierra.git>`_.
 
@@ -29,9 +32,9 @@ Installation
 
      catkin config --extend /path/to/ROS/distro
 
-   If I'm running ROS melodic installed in ``/opt``, then the command would be::
+   If I'm running ROS noetic installed in ``/opt``, then the command would be::
 
-     catkin config --extend /opt/ros/melodic
+     catkin config --extend /opt/ros/noetic
 
 #. Set catkin to install at a common location (e.g., ``$HOME/.local``)::
 

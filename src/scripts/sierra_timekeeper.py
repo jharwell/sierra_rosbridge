@@ -28,11 +28,17 @@ class SIERRATimekeeper():
     def __init__(self) -> None:
         rospy.init_node('sierra_timekeeper', anonymous=True)
         # Relative namespace so this works for robots and for master nodes
-        length = rospy.search_param("sierra/experiment/length")
-        self.name = rospy.get_caller_id()
-        self.barrier_start = rospy.search_param("sierra/experiment/barrier_start")
+        length_path = rospy.search_param("sierra/experiment/length")
+        barrier_start_path = rospy.search_param("sierra/experiment/barrier_start")
 
-        if self.barrier_start is not None:
+        self.name = rospy.get_caller_id()
+        self.length = rospy.get_param(length_path)
+        if barrier_start_path is not None:
+            self.barrier_start = rospy.get_param(barrier_start_path)
+        else:
+            self.barrier_start = False
+
+        if self.barrier_start and self.barrier_start:
             # Leading '/' -> This signal must come from the master in the global
             # namespace
             rospy.Subscriber('/sierra/experiment/start',
@@ -42,15 +48,14 @@ class SIERRATimekeeper():
         else:
             self.start = True
 
-        self.length = rospy.get_param(length)
-
-        rospy.loginfo(
-            f"{self.name}: {self.length} seconds, barrier_start={self.barrier_start}")
+        rospy.loginfo(f"{self.name}: "
+                      f"{length_path}={self.length} seconds, "
+                      f"{barrier_start_path}={self.barrier_start}")
 
     def __call__(self) -> None:
         # Wait until we are given the signal to start the experiment so that all
         # nodes/robots/etc all start at about the same time.
-        if self.barrier_start is not None:
+        if self.barrier_start:
             while not rospy.is_shutdown() and not self.start:
                 rospy.sleep(1)
 
